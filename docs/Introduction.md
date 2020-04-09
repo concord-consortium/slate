@@ -83,7 +83,7 @@ Slate encourages you to write small, reusable modules. Check out the public ones
 * [`slate-paste-linkify`](https://github.com/ianstormtaylor/slate-paste-linkify) wraps the selected text in a link when a URL is pasted from the clipboard.
 * [`slate-soft-break`](https://github.com/ianstormtaylor/slate-soft-break) adds a soft break when `enter` is pressed.
 * [`slate-drop-or-paste-images`](https://github.com/ianstormtaylor/slate-drop-or-paste-images) lets users drop or paste images to insert them!
-* [**View all plugins...**](https://github.com/ianstormtaylor/slate/blob/master/docs/general/plugins.md)
+* [**View all plugins...**](docs/general/plugins.md)
 
 ## Documentation
 

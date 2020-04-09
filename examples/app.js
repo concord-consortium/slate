@@ -367,7 +367,7 @@ export default class App extends React.Component {
               <ExampleTitle>
                 {name}
                 <Link
-                  href={`https://github.com/ianstormtaylor/slate/blob/master/examples${path}`}
+                  href={`https://github.com/ianstormtaylor/slate/blob/v0.47/examples${path}`}
                 >
                   (View Source)
                 </Link>
