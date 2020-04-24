@@ -17,6 +17,7 @@ const PROPS = [
   'renderDocument',
   'renderEditor',
   'renderInline',
+  'renderLeaf',
   'renderMark',
   'schema',
 ]

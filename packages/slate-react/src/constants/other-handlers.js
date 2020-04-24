@@ -12,6 +12,7 @@ const OTHER_HANDLERS = [
   'renderDocument',
   'renderEditor',
   'renderInline',
+  'renderLeaf',
   'renderMark',
 ]
 

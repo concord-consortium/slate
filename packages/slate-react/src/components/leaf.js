@@ -117,21 +117,43 @@ const Leaf = props => {
     text,
   }
 
-  // COMPAT: Having the `data-` attributes on these leaf elements ensures that
-  // in certain misbehaving browsers they aren't weirdly cloned/destroyed by
-  // contenteditable behaviors. (2019/05/08)
-  for (const mark of marks) {
-    const ret = editor.run('renderMark', {
-      ...renderProps,
-      mark,
-      children,
-      attributes: {
-        [DATA_ATTRS.OBJECT]: 'mark',
-      },
-    })
+  const attrs = {
+    [DATA_ATTRS.LEAF]: true,
+    [DATA_ATTRS.OFFSET_KEY]: offsetKey,
+  }
 
-    if (ret) {
-      children = ret
+  // The renderLeaf() function gives more control of the render process
+  // to clients and also is more analogous to the way Slate 0.50+
+  // rendering works thus providing a small step toward 0.50+ migration.
+  const renderedLeaf = editor.run('renderLeaf', {
+    ...renderProps,
+    children,
+    attributes: attrs,
+  })
+
+  if (renderedLeaf) {
+    children = renderedLeaf
+  }
+
+  // renderMark is only called if renderLeaf isn't implemented
+  // (or doesn't return a value)
+  if (!renderedLeaf) {
+    // COMPAT: Having the `data-` attributes on these leaf elements ensures that
+    // in certain misbehaving browsers they aren't weirdly cloned/destroyed by
+    // contenteditable behaviors. (2019/05/08)
+    for (const mark of marks) {
+      const ret = editor.run('renderMark', {
+        ...renderProps,
+        mark,
+        children,
+        attributes: {
+          [DATA_ATTRS.OBJECT]: 'mark',
+        },
+      })
+
+      if (ret) {
+        children = ret
+      }
     }
   }
 
@@ -163,11 +185,6 @@ const Leaf = props => {
     if (ret) {
       children = ret
     }
-  }
-
-  const attrs = {
-    [DATA_ATTRS.LEAF]: true,
-    [DATA_ATTRS.OFFSET_KEY]: offsetKey,
   }
 
   return <span {...attrs}>{children}</span>

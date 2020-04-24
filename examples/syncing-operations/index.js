@@ -91,7 +91,7 @@ class SyncingEditor extends React.Component {
           value={this.state.value}
           onChange={this.onChange}
           onKeyDown={this.onKeyDown}
-          renderMark={this.renderMark}
+          renderLeaf={this.renderLeaf}
           spellCheck
         />
       </div>
@@ -118,27 +118,35 @@ class SyncingEditor extends React.Component {
   }
 
   /**
-   * Render a Slate mark.
+   * Render a Slate leaf.
    *
    * @param {Object} props
    * @return {Element}
    */
 
-  renderMark = (props, editor, next) => {
-    const { children, mark, attributes } = props
+  renderLeaf = (props, editor, next) => {
+    const { marks, attributes } = props
+    let children = props.children
 
-    switch (mark.type) {
-      case 'bold':
-        return <strong {...attributes}>{children}</strong>
-      case 'code':
-        return <code {...attributes}>{children}</code>
-      case 'italic':
-        return <em {...attributes}>{children}</em>
-      case 'underlined':
-        return <u {...attributes}>{children}</u>
-      default:
-        return next()
+    const leafHasMark = type => marks.some(mark => mark.type === type)
+
+    if (leafHasMark('bold')) {
+      children = <strong>{children}</strong>
     }
+
+    if (leafHasMark('code')) {
+      children = <code>{children}</code>
+    }
+
+    if (leafHasMark('italic')) {
+      children = <em>{children}</em>
+    }
+
+    if (leafHasMark('underlined')) {
+      children = <u>{children}</u>
+    }
+
+    return <span {...attributes}>{children}</span>
   }
 
   /**

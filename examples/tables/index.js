@@ -35,7 +35,7 @@ class Tables extends React.Component {
         onDrop={this.onDropOrPaste}
         onPaste={this.onDropOrPaste}
         renderBlock={this.renderBlock}
-        renderMark={this.renderMark}
+        renderLeaf={this.renderLeaf}
       />
     )
   }
@@ -67,21 +67,23 @@ class Tables extends React.Component {
   }
 
   /**
-   * Render a Slate mark.
+   * Render a Slate leaf.
    *
    * @param {Object} props
    * @return {Element}
    */
 
-  renderMark = (props, editor, next) => {
-    const { children, mark, attributes } = props
+  renderLeaf = (props, editor, next) => {
+    const { marks, attributes } = props
+    let children = props.children
 
-    switch (mark.type) {
-      case 'bold':
-        return <strong {...attributes}>{children}</strong>
-      default:
-        return next()
+    const leafHasMark = type => marks.some(mark => mark.type === type)
+
+    if (leafHasMark('bold')) {
+      children = <strong>{children}</strong>
     }
+
+    return <span {...attributes}>{children}</span>
   }
 
   /**
