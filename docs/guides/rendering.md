@@ -2,13 +2,13 @@
 
 One of the best parts of Slate is that it's built with React, so it fits right into your existing application. It doesn't re-invent its own view layer that you have to learn. It tries to keep everything as React-y as possible.
 
-To that end, Slate gives you control over the rendering behavior of every node and mark in your document, and even the top-level editor itself.
+To that end, Slate gives you control over the rendering behavior of your custom nodes and properties in your richtext domain.
 
 You can define these behaviors by passing `props` into the editor, or you can define them in Slate plugins.
 
-## Nodes & Marks
+## Nodes
 
-Using custom components for the nodes and marks is the most common rendering need. Slate makes this easy to do. In case of nodes, you just define a function and pass it to the `renderBlock` or `renderInline` prop of `Editor` component.
+Using custom components for the nodes and leaves is the most common rendering need. Slate makes this easy to do. In the case of nodes, you just define a function and pass it to the `renderBlock` or `renderInline` prop of `Editor` component.
 
 The function is called with the node's props, including `props.node` which is the node itself. You can use these to determine what to render. For example, you can render nodes using simple HTML elements:
 
@@ -82,33 +82,67 @@ const plugins = [
 />
 ```
 
-Marks work the same way, except they invoke the `renderMark` function. Like so:
+## Leaves
+
+When text-level formatting is rendered, the characters are grouped into "leaves" of text that each contain the same formatting applied to them.
+
+To customize the rendering of each leaf, you use a custom `renderLeaf` prop:
 
 ```js
-function renderMark(props, editor, next) {
-  const { children, mark, attributes } = props
-  switch (mark.type) {
-    case 'bold':
-      return <strong {...{ attributes }}>{children}</strong>
-    case 'italic':
-      return <em {...{ attributes }}>{children}</em>
-    case 'code':
-      return <code {...{ attributes }}>{children}</code>
-    case 'underline':
-      return <u {...{ attributes }}>{children}</u>
-    case 'strikethrough':
-      return <s {...{ attributes }}>{children}</s>
-    default:
-      return next()
+function renderLeaf(props, editor, next) {
+  const { marks, attributes } = props
+  let children = props.children
+
+  const leafHasMark = type => marks.some(mark => mark.type === type)
+
+  if (leafHasMark('bold')) {
+    children = <strong>{children}</strong>
   }
+
+  if (leafHasMark('code')) {
+    children = <code>{children}</code>
+  }
+
+  if (leafHasMark('italic')) {
+    children = <em>{children}</em>
+  }
+
+  if (leafHasMark('underlined')) {
+    children = <u>{children}</u>
+  }
+
+  if (leafHasMark('strikethrough')) {
+    children = <s>{children}</s>
+  }
+
+  return <span {...attributes}>{children}</span>
 }
 ```
 
-Be sure to mix `props.attributes` in your `renderMark`. `attributes` provides `data-*` dom attributes for spell-check in non-IE browsers.
+> 🤖 Be sure to mix `props.attributes` in your `renderLeaf`. `attributes` provides `data-*` dom attributes for spell-check in non-IE browsers.
 
-That way, if you happen to have a global stylesheet that defines `strong`, `em`, etc. styles then your editor's content will already be formatted!
+Notice though how we've handled it slightly differently than `renderBlock`. Since text formatting tends to be fairly simple, we've opted to ditch the `switch` statement and just toggle on/off a few styles instead. (But there's nothing preventing you from using custom components if you'd like!)
 
-> 🤖 Be aware though that marks aren't guaranteed to be "contiguous". Which means even though a **word** is bolded, it's not guaranteed to render as a single `<strong>` element. If some of its characters are also italic, it might be split up into multiple elements—one `<strong>wo</strong>` and one `<em><strong>rd</strong></em>`.
+One disadvantage of text-level formatting is that you cannot guarantee that any given format is "contiguous"—meaning that it stays as a single leaf. This limitation with respect to leaves is similar to the DOM, where this is invalid:
+
+```html
+<em>t<strong>e</em>x</strong>t
+```
+
+Because the elements in the above example do not properly close themselves they are invalid. Instead, you would write the above HTML as follows:
+
+```html
+<em>t</em><strong><em>e</em>x</strong>t
+```
+
+If you happened to add another overlapping section of `<strike>` to that text, you might have to rearrange the closing tags yet again. Rendering leaves in Slate is similar—you can't guarantee that even though a word has one type of formatting applied to it that that leaf will be contiguous, because it depends on how it overlaps with other formatting.
+
+Of course, this leaf stuff sounds pretty complex. But, you do not have to think about it much, as long as you use text-level formatting and node-level formatting for their intended purposes:
+
+- Text properties are for **non-contiguous**, character-level formatting.
+- Node properties are for **contiguous**, semantic elements in the document.
+
+> 🤖 Note that in earlier versions of Slate leaf formatting was handled by a `renderMark` prop which Slate called for each mark associated with a given leaf. The `renderMark` prop is still supported, but the `renderLeaf` prop gives the client more control of leaf rendering and is more analogous with the way Slate 0.50+ handles leaf rendering. If the `renderLeaf` prop is not provided, however, the `renderMark` prop will be called as before for the benefit of clients using it.
 
 ## The Editor Itself
 

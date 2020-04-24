@@ -23,6 +23,7 @@ In addition to the [core plugin hooks](../slate/plugins.md), when using `slate-r
   onPaste: Function,
   onSelect: Function,
   renderEditor: Function,
+  renderLeaf: Function,
   renderMark: Function,
   renderAnnotation: Function,
   renderDecoration: Function,
@@ -127,6 +128,30 @@ renderEditor: (props, editor, next) => {
 }
 ```
 
+### `renderLeaf`
+
+`Function renderLeaf(props: Object, editor: Editor, next: Function) => ReactNode|Void`
+
+Render a `Leaf` with `props`. The `props` object contains:
+
+```js
+{
+  attributes: Object,
+  children: ReactNode,
+  editor: Editor,
+  marks: Set<Mark>,
+  annotations: Map<string, Decoration>,
+  decorations: List<Decoration>,
+  node: Node,
+  offset: Number,
+  text: String,
+}
+```
+
+You must spread the `props.attributes` onto the top-level DOM node you use to render the mark.
+
+The `renderLeaf` function should render all of the marks associated with the leaf. If the `renderLeaf` prop is not provided, then the `renderMark` prop will be called for each mark. The `renderLeaf` prop provides more control over leaf rendering and is more analogous to the way leaves are rendered in Slate 0.50+.
+
 ### `renderMark`
 
 `Function renderMark(props: Object, editor: Editor, next: Function) => ReactNode|Void`
@@ -140,6 +165,8 @@ Render a `Mark` with `props`. The `props` object contains:
   editor: Editor,
   mark: Mark,
   marks: Set<Mark>,
+  annotations: Map<string, Decoration>,
+  decorations: List<Decoration>,
   node: Node,
   offset: Number,
   text: String,
@@ -147,6 +174,8 @@ Render a `Mark` with `props`. The `props` object contains:
 ```
 
 You must spread the `props.attributes` onto the top-level DOM node you use to render the mark.
+
+If the `renderLeaf` prop is not provided, then the `renderMark` function will be called to render each mark in turn. If the `renderLeaf` prop is provided, it should render all of the marks and the `renderMark` prop will not be called.
 
 ### `renderDecoration`
 
@@ -161,6 +190,8 @@ Render a `Decoration` with `props`. The `props` object contains:
   editor: Editor,
   decoration: Decoration,
   marks: Set<Mark>,
+  annotations: Map<string, Decoration>,
+  decorations: List<Decoration>,
   node: Node,
   offset: Number,
   text: String,
@@ -182,6 +213,8 @@ Render an `Annotation` with `props`. The `props` object contains:
   editor: Editor,
   annotation: Annotation,
   marks: Set<Mark>,
+  annotations: Map<string, Decoration>,
+  decorations: List<Decoration>,
   node: Node,
   offset: Number,
   text: String,
