@@ -109,6 +109,9 @@ function AfterPlugin(options = {}) {
         break
       }
 
+      // cf. https://github.com/ianstormtaylor/slate/issues/2368#issuecomment-545033238
+      // cf. https://github.com/ianstormtaylor/slate/pull/3126
+      case 'insertFromComposition':
       case 'insertFromYank':
       case 'insertReplacementText':
       case 'insertText': {
