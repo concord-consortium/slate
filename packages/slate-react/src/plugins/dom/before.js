@@ -504,7 +504,11 @@ function BeforePlugin() {
     onKeyDown,
     onPaste,
     onSelect,
-    queries: { userActionPerformed },
+    queries: {
+      // cf. https://github.com/ianstormtaylor/slate/pull/2415/files#r232777986
+      isComposing: () => isComposing,
+      userActionPerformed,
+    },
     commands: { clearUserActionPerformed },
   }
 }
