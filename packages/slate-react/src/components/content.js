@@ -8,6 +8,7 @@ import omit from 'lodash/omit'
 import { List } from 'immutable'
 import {
   IS_ANDROID,
+  IS_CHROME,
   IS_FIREFOX,
   HAS_INPUT_EVENTS_LEVEL_2,
 } from 'slate-dev-environment'
@@ -454,8 +455,18 @@ class Content extends React.Component {
     // at the end of a block. The selection ends up to the left of the inserted
     // character instead of to the right. This behavior continues even if
     // you enter more than one character. (2019/01/03)
-    if (!IS_ANDROID && handler === 'onSelect') {
-      const { editor } = this.props
+    //
+    // CHROME: The updateSelection causes similar issues to Android with IME.
+    // cf. https://github.com/ianstormtaylor/slate/pull/3126
+    const skipUpdate = IS_ANDROID || (IS_CHROME && HAS_INPUT_EVENTS_LEVEL_2)
+    const { editor } = this.props
+
+    if (
+      !skipUpdate &&
+      // cf. https://github.com/ianstormtaylor/slate/pull/2454
+      !editor.isComposing &&
+      handler === 'onSelect'
+    ) {
       const { value } = editor
       const { selection } = value
       const window = getWindow(event.target)
