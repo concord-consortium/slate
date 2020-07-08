@@ -8,6 +8,13 @@ import resolve from 'rollup-plugin-node-resolve'
 import uglify from 'rollup-plugin-uglify'
 import { startCase } from 'lodash'
 
+// [CC]
+function getPkgName(pkg) {
+  const parts = pkg.name.split('/')
+  return parts[parts.length - 1]
+}
+// [/CC]
+
 /**
  * Return a Rollup configuration for a `pkg` with `env` and `target`.
  *
@@ -21,7 +28,8 @@ function configure(pkg, env, target) {
   const isProd = env === 'production'
   const isUmd = target === 'umd'
   const isModule = target === 'module'
-  const input = `packages/${pkg.name}/src/index.js`
+  const pkgName = getPkgName(pkg) // [CC]
+  const input = `packages/${pkgName}/src/index.js`
   const deps = []
     .concat(pkg.dependencies ? Object.keys(pkg.dependencies) : [])
     .concat(pkg.peerDependencies ? Object.keys(pkg.peerDependencies) : [])
@@ -37,7 +45,7 @@ function configure(pkg, env, target) {
     // modules by default.
     isUmd &&
       commonjs({
-        exclude: [`packages/${pkg.name}/src/**`],
+        exclude: [`packages/${pkgName}/src/**`],
         // HACK: Sometimes the CommonJS plugin can't identify named exports, so
         // we have to manually specify named exports here for them to work.
         // https://github.com/rollup/rollup-plugin-commonjs#custom-named-exports
@@ -71,7 +79,7 @@ function configure(pkg, env, target) {
 
     // Use Babel to transpile the result, limiting it to the source code.
     babel({
-      include: [`packages/${pkg.name}/src/**`],
+      include: [`packages/${pkgName}/src/**`],
     }),
 
     // Register Node.js globals for browserify compatibility.
@@ -88,9 +96,9 @@ function configure(pkg, env, target) {
       input,
       output: {
         format: 'umd',
-        file: `packages/${pkg.name}/${isProd ? pkg.umdMin : pkg.umd}`,
+        file: `packages/${pkgName}/${isProd ? pkg.umdMin : pkg.umd}`,
         exports: 'named',
-        name: startCase(pkg.name).replace(/ /g, ''),
+        name: startCase(pkgName).replace(/ /g, ''),
         globals: pkg.umdGlobals,
       },
       external: Object.keys(pkg.umdGlobals || {}),
@@ -103,12 +111,12 @@ function configure(pkg, env, target) {
       input,
       output: [
         {
-          file: `packages/${pkg.name}/${pkg.module}`,
+          file: `packages/${pkgName}/${pkg.module}`,
           format: 'es',
           sourcemap: true,
         },
         {
-          file: `packages/${pkg.name}/${pkg.main}`,
+          file: `packages/${pkgName}/${pkg.main}`,
           format: 'cjs',
           exports: 'named',
           sourcemap: true,

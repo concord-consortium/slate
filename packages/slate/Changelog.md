@@ -4,6 +4,14 @@ A list of changes to the `slate` package with each new version. Until `1.0.0` is
 
 ---
 
+### `0.47.9-cc.1` — July 7, 2020
+
+###### FIXED
+
+**Improved IME Input** Incorporated several proposed fixes from prior issues/pull requests to fix IME bugs ([#1](https://github.com/concord-consortium/slate/pull/1)) in preparation for publishing the first version of the CC fork.
+
+---
+
 ### `0.47.0` — May 8, 2019
 
 ###### NEW
