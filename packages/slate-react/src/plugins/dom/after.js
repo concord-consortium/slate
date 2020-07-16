@@ -40,7 +40,6 @@ function AfterPlugin(options = {}) {
 
   // inProgressCompositionText can be more current than event.data
   function eventData(event) {
-    event = event.nativeEvent || event
     return inProgressCompositionText || event.data
   }
 
