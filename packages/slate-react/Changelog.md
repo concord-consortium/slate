@@ -4,6 +4,14 @@ This document maintains a list of changes to the `slate-react` package with each
 
 ---
 
+### `0.22.10-cc.1` — July 15, 2020
+
+###### FIXED
+
+**Improved IME Input** Incorporated several proposed fixes from prior issues/pull requests to fix IME bugs ([#1](https://github.com/concord-consortium/slate/pull/1)) in preparation for publishing the first version of @concord-consortium/slate-react. Also brought in a fix from the master branch and fixed some other IME bugs ([#2](https://github.com/concord-consortium/slate/pull/2)).
+
+---
+
 ### `0.22.0` — May 8, 2019
 
 ###### BREAKING
