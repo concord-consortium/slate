@@ -3,7 +3,13 @@ import Debug from 'debug'
 import Hotkeys from 'slate-hotkeys'
 import Plain from 'slate-plain-serializer'
 import getWindow from 'get-window'
-import { IS_IOS, IS_IE, IS_EDGE } from 'slate-dev-environment'
+import {
+  IS_IOS,
+  IS_IE,
+  IS_EDGE,
+  IS_FIREFOX,
+  IS_SAFARI,
+} from 'slate-dev-environment'
 
 import cloneFragment from '../../utils/clone-fragment'
 import getEventTransfer from '../../utils/get-event-transfer'
@@ -25,8 +31,34 @@ const debug = Debug('slate:after')
  */
 
 function AfterPlugin(options = {}) {
+  // most recent in-progress composition
+  let inProgressCompositionText = null
+  // event.data from most recently inserted composition - used for event matching
+  let insertedCompositionEventData = null
   let isDraggingInternally = null
   let isMouseDown = false
+
+  // inProgressCompositionText can be more current than event.data
+  function eventData(event) {
+    event = event.nativeEvent || event
+    return inProgressCompositionText || event.data
+  }
+
+  /**
+   * Called from BeforePlugin
+   * Tracks the most recent state of the in-progress composition.
+   *
+   * @param {*} editor
+   * @param {*} event
+   */
+
+  function onCompositionInput(editor, event) {
+    event = event.nativeEvent || event
+
+    if (event.inputType === 'insertCompositionText') {
+      inProgressCompositionText = event.data
+    }
+  }
 
   /**
    * On before input.
@@ -45,7 +77,9 @@ function AfterPlugin(options = {}) {
     // gets triggered for character insertions, so we can just insert directly.
     if (isSynthetic) {
       event.preventDefault()
-      editor.insertText(event.data)
+      editor.insertText(eventData(event))
+      // use actual event.data because it's used for matching not insertion
+      if (editor.isComposing()) insertedCompositionEventData = event.data
       return next()
     }
 
@@ -122,7 +156,7 @@ function AfterPlugin(options = {}) {
         const text =
           event.data == null
             ? event.dataTransfer.getData('text/plain')
-            : event.data
+            : eventData(event)
 
         if (text == null) break
 
@@ -185,6 +219,35 @@ function AfterPlugin(options = {}) {
       // it to the end of the node. (2016/11/29)
       editor.focus().moveToEndOfNode(node)
     }
+
+    next()
+  }
+
+  /**
+   * On composition end.
+   *
+   * @param {Event} event
+   * @param {Editor} editor
+   * @param {Function} next
+   */
+
+  function onCompositionEnd(event, editor, next) {
+    debug('onCompositionEnd', { event })
+
+    // COMPAT: In Chrome, `beforeinput` events for compositions
+    // aren't correct and never fire the "insertFromComposition"
+    // type that we need. So instead, insert whenever a composition
+    // ends since it will already have been committed to the DOM.
+    // cf. https://github.com/ianstormtaylor/slate/blob/93fe25151722343488e9002a0ebd8ed3ba66ee95/packages/slate-react/src/components/editable.tsx#L596-L602
+    if (!IS_SAFARI && !IS_FIREFOX && event.data) {
+      // unless it's already been inserted in onBeforeInput
+      if (event.data !== insertedCompositionEventData) {
+        editor.insertText(eventData(event))
+      }
+    }
+
+    inProgressCompositionText = null
+    insertedCompositionEventData = null
 
     next()
   }
@@ -675,9 +738,11 @@ function AfterPlugin(options = {}) {
    */
 
   return {
+    commands: { onCompositionInput },
     onBeforeInput,
     onBlur,
     onClick,
+    onCompositionEnd,
     onCopy,
     onCut,
     onDragEnd,
