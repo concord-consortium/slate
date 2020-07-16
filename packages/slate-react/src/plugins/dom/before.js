@@ -375,7 +375,8 @@ function BeforePlugin() {
    */
 
   function onInput(event, editor, next) {
-    if (isComposing) return
+    // let AfterPlugin have a crack at composition-related input events
+    if (isComposing) return editor.command('onCompositionInput', event)
     if (editor.value.selection.isBlurred) return
     isUserActionPerformed = true
     debug('onInput', { event })
