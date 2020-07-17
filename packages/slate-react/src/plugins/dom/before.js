@@ -479,6 +479,10 @@ function BeforePlugin() {
     return null
   }
 
+  function setUserActionPerformed() {
+    isUserActionPerformed = true
+  }
+
   /**
    * Return the plugin.
    *
@@ -510,7 +514,10 @@ function BeforePlugin() {
       isComposing: () => isComposing,
       userActionPerformed,
     },
-    commands: { clearUserActionPerformed },
+    commands: {
+      clearUserActionPerformed,
+      setUserActionPerformed,
+    },
   }
 }
 
